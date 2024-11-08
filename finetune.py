@@ -132,6 +132,12 @@ def accuracy(result):
     print(f"The worst performing group is '{worst_group[0]}' with an accuracy of {worst_group[1] * 100}%")
 
 
+#Combines the previous 2 functions together 
+def data_analysis(predictions, data_type = "test"):
+  cleaned = prediction_reformat(predictions)
+  final_results = accuracy(cleaned, data_type)
+
+
 # Train model on training dataset
 def train(num_img, batch_size=10, num_epoch=2):
     # Set up training parameters
