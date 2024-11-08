@@ -134,8 +134,11 @@ def accuracy(result):
 
 #Combines the previous 2 functions together 
 def data_analysis(predictions, data_type = "test"):
-  cleaned = prediction_reformat(predictions)
-  final_results = accuracy(cleaned, data_type)
+    cleaned = prediction_reformat(predictions)
+    final_results = accuracy(cleaned, data_type)
+
+    return final_results
+
 
 
 # Train model on training dataset
