@@ -6,6 +6,7 @@ from datasets import load_dataset
 import torch.optim as optim
 import torch.nn.functional as F
 import time
+import random
 
 # Load cifar10 dataset and extract labels
 datasets = load_dataset("cifar10")
@@ -194,6 +195,58 @@ def train(num_img, batch_size=10, num_epoch=2):
         print(f"Epoch {epoch+1}/{num_epoch} completed in {t3 - t1} seconds, Loss: {avg_loss:.4f}")
 
 
+# Shuffle the dataset to prevent overfitting
+def train_shuffled(num_img, batch_size=10, num_epoch=2):
+    # Set up training parameters
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    optimizer = optim.Adam(model.parameters(), lr=1e-5)
+    total_loss = 0
+    model.to(device)
+    model.train()
+
+
+    for epoch in range(num_epoch):
+        t0 = time.perf_counter()
+        epoch_loss = 0
+
+        # Separate training data into smaller batches
+        for i in range(num_img // batch_size):
+            shuffled_dataset = datasets["train"].shuffle(randint(0, num_img)
+            train_set = shuffled_datasets["train"].select(range(i * batch_size, (i + 1) * batch_size))
+            t1 = time.perf_counter()
+
+            # Process the data, feed it into the model
+            input = processor(text=labels, images=train_set["img"], return_tensors="pt", padding=False).to(device)
+            output = model(**input)
+
+            # Get the logit for the predictions on the image and text
+            logits_per_image = output.logits_per_image
+            logits_per_text = output.logits_per_text
+            # Turn this tensor from batch_size x 1 matrix to 1 x batch_size (doesn't work otherwise)
+            logits_per_text = logits_per_text.squeeze()
+
+            # Accesses the ground truth
+            targets = torch.tensor(train_set["label"]).to(device)
+
+            # Uses the cross-loss entropy function to calculate the loss of the images and text, utilizes softmax activation
+            loss_img = F.cross_entropy(logits_per_image, targets)
+            loss_text = F.cross_entropy(logits_per_text, targets)
+
+            # Calculate the total loss 
+            loss = (loss_img + loss_text) / 2
+            t2 = time.perf_counter()
+            print(f"Finished batch {i + 1}/{num_img // batch_size} in {t2 - t1} seconds")
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+
+        t3 = time.perf_counter()
+        total_loss += epoch_loss
+        avg_loss = epoch_loss / (num_img // batch_size)
+        print(f"Epoch {epoch+1}/{num_epoch} completed in {t3 - t1} seconds, Loss: {avg_loss:.4f}")
 
 
 
