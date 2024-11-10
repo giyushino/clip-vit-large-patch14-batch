@@ -44,8 +44,8 @@ def homemade_batch(num_img, batch_size=10, start_img=0, data_type = "test"):
         output = model(**input)
 
         # Access logits of the input images, apply softmax function
-        logits = output.logits_per_image
-        probs = logits.softmax(dim=1)
+        logits = output.logits_per_image #Finds the similarities
+        probs = logits.softmax(dim=1) #Computes the probabilities
 
         # Find maximum of the probabilities, as well as their corresponding index, append them to list
         max_prob, max_id = probs.max(dim=1)
